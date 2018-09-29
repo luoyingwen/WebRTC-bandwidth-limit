@@ -124,7 +124,7 @@ function createPeerConnection() {
             console.log('localPeerConnection offering');
 
             localPeerConnection.setLocalDescription(offer);
-            offer.sdp = setMediaBitrates(offer.sdp);
+            offer.sdp = setMediaBitrateAndCodecPrioritys(offer.sdp);
             console.log(`Offer from pc1 ${offer.sdp}`);
             remotePeerConnection.setRemoteDescription(offer);
 
@@ -132,7 +132,7 @@ function createPeerConnection() {
                 function(answer) {
                     console.log('remotePeerConnection answering');
                     remotePeerConnection.setLocalDescription(answer);
-                    answer.sdp = setMediaBitrates(answer.sdp);
+                    answer.sdp = setMediaBitrateAndCodecPrioritys(answer.sdp);
                     console.log(`Answer from pc2:\n${answer.sdp}`);
                     localPeerConnection.setRemoteDescription(answer);
                 },

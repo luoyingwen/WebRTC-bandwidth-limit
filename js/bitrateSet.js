@@ -1,8 +1,9 @@
-function setMediaBitrates(sdp) {
-    return setMediaBitrate(sdp, "video", 1024, 1024000, 1536)
+function setMediaBitrateAndCodecPrioritys(sdp) {
+    return setMediaBitrateAndCodecPriority(sdp, "video", 1024, 1024000, 1536)
 }
 
-function setMediaBitrate(sdp, media, ASBitrate, TIASBitrate, startBitrate) {
+
+function setMediaBitrateAndCodecPriority(sdp, media, ASBitrate, TIASBitrate, startBitrate) {
     var lines = sdp.split("\n");
     var line = -1;
     var slideCodeName = "H264";
@@ -11,7 +12,7 @@ function setMediaBitrate(sdp, media, ASBitrate, TIASBitrate, startBitrate) {
     var PTnumber;
     var codecsReorder;
     var codecs = [];
-    var priorityCodecs = [];
+    var priorityCodecs = [];  // An encoder may have multiple PT values
     var serverUsedCode = [];
     var count = 0;
     var mLineRegex = /^m=video\s[0-9]{1,}\s\w{3,5}(\/\w{3,5})*?\s/;
@@ -36,50 +37,51 @@ function setMediaBitrate(sdp, media, ASBitrate, TIASBitrate, startBitrate) {
     }
 
     for(var j = line; j < lines.length; j++){
-        if(lines[j].indexOf("a=rtpmap") >= 0){
+        if(lines[j].indexOf("a=rtpmap") >= 0) {
             line = j;
             line++;
-            if(lines[j].indexOf("VP8") >= 0){
-                PTnumber = lines[j].substr(9,3);
+            if (lines[j].indexOf("VP8") >= 0) {
+                PTnumber = lines[j].substr(9, 3);
                 line++;
                 newLinesForStartBitrate = newLinesForBitrate.slice(0, line);
-                newLinesForStartBitrate.push("a=fmtp:" + PTnumber +  " x-google-start-bitrate=" + startBitrate);
+                newLinesForStartBitrate.push("a=fmtp:" + PTnumber + " x-google-start-bitrate=" + startBitrate);
                 newLinesForBitrate = newLinesForStartBitrate.concat(
                     newLinesForBitrate.slice(line, newLinesForBitrate.length)
                 );
-
-                if(slideCodeName == "VP8"){
-                    serverUsedCode.push(PTnumber);
-                }else {
-                    priorityCodecs.push(PTnumber);
-                }
                 count++;
+
+                // Use the slide_video_in Codec , only for chrome
+                // Currently unable to get the codec type used by firefox
+                if(slideCodeName != ""){
+                    slideCodeName == "VP8"?serverUsedCode.push(PTnumber):priorityCodecs.push(PTnumber);
+                }
             }
-            else if(lines[j].indexOf("H264") >= 0){
-                PTnumber = lines[j].substr(9,3);
+            else if (lines[j].indexOf("H264") >= 0) {
+                PTnumber = lines[j].substr(9, 3);
                 line++;
                 line = line + count;
                 newLinesForStartBitrate = newLinesForBitrate.slice(0, line);
-                newLinesForStartBitrate.push("a=fmtp:" + PTnumber +  " x-google-start-bitrate=" + startBitrate);
+                newLinesForStartBitrate.push("a=fmtp:" + PTnumber + " x-google-start-bitrate=" + startBitrate);
                 newLinesForBitrate = newLinesForStartBitrate.concat(
                     newLinesForBitrate.slice(line, newLinesForBitrate.length)
                 );
-
-                if(slideCodeName == "H264"){
-                    serverUsedCode.push(PTnumber);
-                }else {
-                    priorityCodecs.push(PTnumber);
-                }
                 count++;
+
+                // Use the slide_video_in Codec , only for chrome
+                // Currently unable to get the codec type used by firefox
+                if(slideCodeName != "" ){
+                    slideCodeName == "H264"?serverUsedCode.push(PTnumber):priorityCodecs.push(PTnumber);
+                }
             }
             else {
-                codecs.push(lines[j].substr(9,3));
+                codecs.push(lines[j].substr(9, 3));
             }
         }
     }
 
-    if(media === "video"){
+    if(slideCodeName != "" && media === "video"){
         codecsReorder = serverUsedCode.concat(priorityCodecs.concat(codecs)).join(" ").replace(/\s+/g, " ");
+        console.warn(codecsReorder);
         for(var k = 0; k < newLinesForBitrate.length; k++){
             if(newLinesForBitrate[k].indexOf("m="+media) === 0) {
                 newLinesForBitrate[k] = newLinesForBitrate[k].match(mLineRegex)[0] + codecsReorder;
