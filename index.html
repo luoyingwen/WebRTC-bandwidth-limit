@@ -30,10 +30,24 @@
 
 <div id="container">
 
-    <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>Bitrate control</span>
+    <h1><a href="https://github.com/ouchunrun/WebRTC-bandwidth-limit">Bitrate control</a>
     </h1>
 
-    <h2>通过修改SDP来限制WEBrtc带宽</h2>
+    <h2>通过修改SDP来限制WebRTC带宽</h2>
+
+    <div>
+        <span>选择是否设置带宽：</span>
+        <select name="" id="bitrateEnabled" onchange="bitrateChoose()" style="width: 200px;height: 30px;">
+            <option value="false">不启用</option>
+            <option value="true">启用</option>
+        </select>
+        <div id="bitrateSet" style="display: none">
+            <span>ASBitrate：</span><input type="text" id="ASBitrate" style="height: 25px;" placeholder="输入要设置的AS值">
+            <span>TIASBitrate：</span><input type="text" id="TIASBitrate" style="height: 25px;" placeholder="输入要设置的TIAS值">
+        </div>
+    </div>
+
+    <hr>
 
     <div>
         <button id="getMedia">Get media</button>

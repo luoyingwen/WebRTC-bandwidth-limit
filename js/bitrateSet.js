@@ -1,5 +1,21 @@
 function setMediaBitrateAndCodecPrioritys(sdp) {
-    return setMediaBitrateAndCodecPriority(sdp, "video", 1024, 1024000, 1536)
+    let bitrateList = document.getElementById('bitrateEnabled').options
+    let select= bitrateList[bitrateList.selectedIndex]
+    console.log("select: ", select.value)
+    if(select.value === 'true'){
+        console.log('enabled')
+        let ASBitrate = document.getElementById('ASBitrate').value
+        let TIASBitrate = document.getElementById('TIASBitrate').value
+
+        ASBitrate = ASBitrate ? ASBitrate : 1024
+        TIASBitrate = TIASBitrate ? TIASBitrate : 1024000
+        console.warn("set ASBitrate: ", ASBitrate)
+        console.warn("set TIASBitrate: " , TIASBitrate)
+        return setMediaBitrateAndCodecPriority(sdp, "video", ASBitrate, TIASBitrate, 1536)
+    }else {
+        console.log('disabled')
+        return sdp
+    }
 }
 
 
@@ -44,7 +60,7 @@ function setMediaBitrateAndCodecPriority(sdp, media, ASBitrate, TIASBitrate, sta
                 PTnumber = lines[j].substr(9, 3);
                 line++;
                 newLinesForStartBitrate = newLinesForBitrate.slice(0, line);
-                newLinesForStartBitrate.push("a=fmtp:" + PTnumber + " x-google-start-bitrate=" + startBitrate);
+                // newLinesForStartBitrate.push("a=fmtp:" + PTnumber + " x-google-start-bitrate=" + startBitrate);
                 newLinesForBitrate = newLinesForStartBitrate.concat(
                     newLinesForBitrate.slice(line, newLinesForBitrate.length)
                 );
@@ -61,7 +77,7 @@ function setMediaBitrateAndCodecPriority(sdp, media, ASBitrate, TIASBitrate, sta
                 line++;
                 line = line + count;
                 newLinesForStartBitrate = newLinesForBitrate.slice(0, line);
-                newLinesForStartBitrate.push("a=fmtp:" + PTnumber + " x-google-start-bitrate=" + startBitrate);
+                // newLinesForStartBitrate.push("a=fmtp:" + PTnumber + " x-google-start-bitrate=" + startBitrate);
                 newLinesForBitrate = newLinesForStartBitrate.concat(
                     newLinesForBitrate.slice(line, newLinesForBitrate.length)
                 );

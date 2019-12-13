@@ -39,6 +39,27 @@ var constraints = {
 
 };
 
+/**
+ * 是否修改sdp带宽值
+ */
+function bitrateChoose() {
+    let bitrateSet = document.getElementById('bitrateSet')
+    let bitrateList = document.getElementById('bitrateEnabled').options
+    if(bitrateList && bitrateList.length > 0){
+        let select= bitrateList[bitrateList.selectedIndex]
+        if(select.value === 'true'){
+            console.log('启用带宽设置')
+            bitrateSet.style.display = 'block'
+        }else {
+            console.log('不启用带宽设置')
+            bitrateSet.style.display = 'none'
+        }
+        console.warn("bitrate select: ", select.label)
+    }else {
+        alert('No device here! plug device and Try again!')
+    }
+}
+
 // getMedia();
 
 function getMedia() {
@@ -72,7 +93,44 @@ function gotStream(stream) {
     localVideo.srcObject = stream;
 }
 
+function legalCheck() {
+    let result = true
+    let bitrateList = document.getElementById('bitrateEnabled').options
+    let select= bitrateList[bitrateList.selectedIndex]
+    if(select.value === 'true'){
+        let ASBitrate = document.getElementById('ASBitrate').value
+        let TIASBitrate = document.getElementById('TIASBitrate').value
+
+        if(isNaN(ASBitrate.trim())){
+            console.warn('ASBitrate is required to be a number')
+            result = false
+        }
+
+        if(isNaN(TIASBitrate.trim())){
+            console.warn('ASBitrate is required to be a number')
+            result = false
+        }
+
+        if(ASBitrate.trim().length === 0){
+            console.warn('ASBitrate is Mandatory*  Flied')
+            result = false
+        }
+
+        if(TIASBitrate.trim().length === 0){
+            console.warn('ASBitrate is Mandatory*  Flied')
+            result = false
+        }
+
+    }
+    return result
+}
+
 function createPeerConnection() {
+    if(!legalCheck()){
+        alert('请输入ASBitrate、TIASBitrate并确保为数字')
+        return
+    }
+
     console.log("begin create peerConnections");
     connectButton.disabled = true;
     hangupButton.disabled = false;
@@ -124,7 +182,7 @@ function createPeerConnection() {
             console.log('localPeerConnection offering');
 
             localPeerConnection.setLocalDescription(offer);
-            offer.sdp = setMediaBitrateAndCodecPrioritys(offer.sdp);
+            // offer.sdp = setMediaBitrateAndCodecPrioritys(offer.sdp);
             console.log(`Offer from pc1 ${offer.sdp}`);
             remotePeerConnection.setRemoteDescription(offer);
 
