@@ -6,9 +6,6 @@ function setMediaBitrateAndCodecPrioritys(sdp) {
         console.log('enabled')
         let ASBitrate = document.getElementById('ASBitrate').value
         let TIASBitrate = document.getElementById('TIASBitrate').value
-
-        ASBitrate = ASBitrate ? ASBitrate : 1024
-        TIASBitrate = TIASBitrate ? TIASBitrate : 1024000
         console.warn("set ASBitrate: ", ASBitrate)
         console.warn("set TIASBitrate: " , TIASBitrate)
         return setMediaBitrateAndCodecPriority(sdp, "video", ASBitrate, TIASBitrate, 1536)
@@ -41,12 +38,30 @@ function setMediaBitrateAndCodecPriority(sdp, media, ASBitrate, TIASBitrate, sta
                 line++;
             }
             if (lines[line].indexOf("b=") >= 0) {
-                lines[line] = "b=AS:" + ASBitrate + "\r\nb=TIAS:" + TIASBitrate;
+                if(ASBitrate && TIASBitrate){
+                    console.warn("set both ASBitrate and TIASBitrate")
+                    lines[line] = "b=AS:" + ASBitrate + "\r\nb=TIAS:" + TIASBitrate;
+                }else if(ASBitrate){
+                    console.warn("only set ASBitrate: ", ASBitrate)
+                    lines[line] = "b=AS:" + ASBitrate;
+                }else if(TIASBitrate){
+                    console.warn("only set TIASBitrate: ", TIASBitrate)
+                    lines[line] = "b=TIAS:" + TIASBitrate;
+                }
                 return lines.join("\n");
             }
 
             newLinesForBitrate = lines.slice(0, line);
-            newLinesForBitrate.push("b=AS:" + ASBitrate + "\r\nb=TIAS:" + TIASBitrate);
+            if(ASBitrate && TIASBitrate){
+                console.warn("set both ASBitrate and TIASBitrate")
+                newLinesForBitrate.push("b=AS:" + ASBitrate + "\r\nb=TIAS:" + TIASBitrate);
+            }else if(ASBitrate){
+                console.warn("only set ASBitrate: ", ASBitrate)
+                newLinesForBitrate.push("b=AS:" + ASBitrate);
+            }else if(TIASBitrate){
+                console.warn("only set TIASBitrate: ", TIASBitrate)
+                newLinesForBitrate.push("b=TIAS:" + TIASBitrate);
+            }
             newLinesForBitrate = newLinesForBitrate.concat(lines.slice(line, lines.length));
             break;
         }

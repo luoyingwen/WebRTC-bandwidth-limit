@@ -107,17 +107,12 @@ function legalCheck() {
         }
 
         if(isNaN(TIASBitrate.trim())){
-            console.warn('ASBitrate is required to be a number')
+            console.warn('TIASBitrate is required to be a number')
             result = false
         }
 
-        if(ASBitrate.trim().length === 0){
-            console.warn('ASBitrate is Mandatory*  Flied')
-            result = false
-        }
-
-        if(TIASBitrate.trim().length === 0){
-            console.warn('ASBitrate is Mandatory*  Flied')
+        if(ASBitrate.trim().length === 0 && TIASBitrate.trim().length === 0){
+            console.warn('至少设置一个值')
             result = false
         }
 
