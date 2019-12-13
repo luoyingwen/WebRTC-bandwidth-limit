@@ -1,4 +1,4 @@
-function setMediaBitrateAndCodecPrioritys(sdp) {
+function setMediaBitrate(sdp) {
     let bitrateList = document.getElementById('bitrateEnabled').options
     let select= bitrateList[bitrateList.selectedIndex]
     console.log("select: ", select.value)
@@ -8,7 +8,7 @@ function setMediaBitrateAndCodecPrioritys(sdp) {
         let TIASBitrate = document.getElementById('TIASBitrate').value
         console.warn("set ASBitrate: ", ASBitrate)
         console.warn("set TIASBitrate: " , TIASBitrate)
-        return setMediaBitrateAndCodecPriority(sdp, "video", ASBitrate, TIASBitrate, 1536)
+        return _setMediaBitrate(sdp, "video", ASBitrate, TIASBitrate)
     }else {
         console.log('disabled')
         return sdp
@@ -16,19 +16,10 @@ function setMediaBitrateAndCodecPrioritys(sdp) {
 }
 
 
-function setMediaBitrateAndCodecPriority(sdp, media, ASBitrate, TIASBitrate, startBitrate) {
+function _setMediaBitrate(sdp, media, ASBitrate, TIASBitrate) {
     var lines = sdp.split("\n");
     var line = -1;
-    var slideCodeName = "H264";
     var newLinesForBitrate;
-    var newLinesForStartBitrate;
-    var PTnumber;
-    var codecsReorder;
-    var codecs = [];
-    var priorityCodecs = [];  // An encoder may have multiple PT values
-    var serverUsedCode = [];
-    var count = 0;
-    var mLineRegex = /^m=video\s[0-9]{1,}\s\w{3,5}(\/\w{3,5})*?\s/;
 
     for(var i = 0; i < lines.length; i++){
         if(lines[i].indexOf("m="+media) >= 0) {
@@ -67,7 +58,46 @@ function setMediaBitrateAndCodecPriority(sdp, media, ASBitrate, TIASBitrate, sta
         }
     }
 
-    for(var j = line; j < lines.length; j++){
+    return newLinesForBitrate.join("\n");
+}
+
+
+function setStartBitrate(sdp, media) {
+    var startBitrate = document.getElementById('startBitrate').value
+    if(startBitrate.trim().length === 0){
+        console.warn("没有设置 startBitrate， 不修改sdp")
+        return sdp
+    }
+    var lines = sdp.split("\n");
+    var line = -1;
+    var slideCodeName = "H264";
+    var newLinesForBitrate;
+    var newLinesForStartBitrate;
+    var PTnumber;
+    var codecsReorder;
+    var codecs = [];
+    var priorityCodecs = [];  // An encoder may have multiple PT values
+    var serverUsedCode = [];
+    var count = 0;
+    var mLineRegex = /^m=video\s[0-9]{1,}\s\w{3,5}(\/\w{3,5})*?\s/;
+
+    for(var i = 0; i < lines.length; i++){
+        if(lines[i].indexOf("m="+media) >= 0) {
+            line = i;
+            line++;
+            while (lines[line].indexOf("i=") >= 0 || lines[line].indexOf("c=") >= 0) {
+                line++;
+            }
+            if (lines[line].indexOf("b=") >= 0) {
+                return lines.join("\n");
+            }
+            newLinesForBitrate = lines.slice(0, line);
+            newLinesForBitrate = newLinesForBitrate.concat(lines.slice(line, lines.length));
+            break;
+        }
+    }
+
+    for(let j = line; j < lines.length; j++){
         if(lines[j].indexOf("a=rtpmap") >= 0) {
             line = j;
             line++;
@@ -75,16 +105,17 @@ function setMediaBitrateAndCodecPriority(sdp, media, ASBitrate, TIASBitrate, sta
                 PTnumber = lines[j].substr(9, 3);
                 line++;
                 newLinesForStartBitrate = newLinesForBitrate.slice(0, line);
-                // newLinesForStartBitrate.push("a=fmtp:" + PTnumber + " x-google-start-bitrate=" + startBitrate);
-                newLinesForBitrate = newLinesForStartBitrate.concat(
-                    newLinesForBitrate.slice(line, newLinesForBitrate.length)
-                );
+                if(startBitrate){
+                    console.log("set x-google-start-bitrate: ", startBitrate)
+                    newLinesForStartBitrate.push("a=fmtp:" + PTnumber + " x-google-start-bitrate=" + startBitrate);
+                }
+                newLinesForBitrate = newLinesForStartBitrate.concat(newLinesForBitrate.slice(line, newLinesForBitrate.length));
                 count++;
 
                 // Use the slide_video_in Codec , only for chrome
                 // Currently unable to get the codec type used by firefox
-                if(slideCodeName != ""){
-                    slideCodeName == "VP8"?serverUsedCode.push(PTnumber):priorityCodecs.push(PTnumber);
+                if(slideCodeName !== ""){
+                    slideCodeName === "VP8"?serverUsedCode.push(PTnumber):priorityCodecs.push(PTnumber);
                 }
             }
             else if (lines[j].indexOf("H264") >= 0) {
@@ -92,16 +123,17 @@ function setMediaBitrateAndCodecPriority(sdp, media, ASBitrate, TIASBitrate, sta
                 line++;
                 line = line + count;
                 newLinesForStartBitrate = newLinesForBitrate.slice(0, line);
-                // newLinesForStartBitrate.push("a=fmtp:" + PTnumber + " x-google-start-bitrate=" + startBitrate);
-                newLinesForBitrate = newLinesForStartBitrate.concat(
-                    newLinesForBitrate.slice(line, newLinesForBitrate.length)
-                );
+                if(startBitrate){
+                    console.warn("set x-google-start-bitrate: ", startBitrate)
+                    newLinesForStartBitrate.push("a=fmtp:" + PTnumber + " x-google-start-bitrate=" + startBitrate);
+                }
+                newLinesForBitrate = newLinesForStartBitrate.concat(newLinesForBitrate.slice(line, newLinesForBitrate.length));
                 count++;
 
                 // Use the slide_video_in Codec , only for chrome
                 // Currently unable to get the codec type used by firefox
-                if(slideCodeName != "" ){
-                    slideCodeName == "H264"?serverUsedCode.push(PTnumber):priorityCodecs.push(PTnumber);
+                if(slideCodeName !== "" ){
+                    slideCodeName === "H264"?serverUsedCode.push(PTnumber):priorityCodecs.push(PTnumber);
                 }
             }
             else {
@@ -110,7 +142,7 @@ function setMediaBitrateAndCodecPriority(sdp, media, ASBitrate, TIASBitrate, sta
         }
     }
 
-    if(slideCodeName != "" && media === "video"){
+    if(slideCodeName !== "" && media === "video"){
         codecsReorder = serverUsedCode.concat(priorityCodecs.concat(codecs)).join(" ").replace(/\s+/g, " ");
         console.warn(codecsReorder);
         for(var k = 0; k < newLinesForBitrate.length; k++){

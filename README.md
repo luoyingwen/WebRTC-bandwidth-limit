@@ -1,17 +1,24 @@
 # WebRTC Bitrate control
 
+功能： 
+- 1、默认不启用带宽设置 
+- 2、启用带宽设置
+    - 设置answer sdp b=AS值
+    - 设置answer sdp b=TIAS值
+    
+- 3、如果startBitrate有值，则设置offer sdp  起始码率x-google-start-bitrate和优先H264编码
 
 
-1.设置m=video行下的带宽（AS && TILS）和初始带宽（x-google-start-bitrate）
-
-2.修改m编解码器的优先级顺序
 
 
 # 说明
 
-选取是否设置带宽值：如果启用的话，需要填写要设置的ASBitrate和TIASBitrate，不填写的话，默认：
-- ASBitrate： 1024
-- TIASBitrate：1024000
+选取是否设置带宽值：如果启用的话，需要填写要设置的ASBitrate或TIASBitrate，至少填写一个：
+
+- ASBitrate 有值，则在answer sdp 添加b=AS行
+- TIASBitrate 有值，则在answer sdp 添加b=TIAS行
+- ASBitrate 和 TIASBitrate 都有值，则在answer sdp 同时添加b=AS行和b=TIAS行
+- startBitrate有值，则在offer sdp的a=rtpmap行添加  x-google-start-bitrate=设置
 
 
 二、demo 测试通过修改SDP来限制WebRTC的带宽

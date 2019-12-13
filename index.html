@@ -22,7 +22,7 @@
     <title>Constraints and statistics</title>
 
     <!--<link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">-->
-    <link rel="stylesheet" href="./css/_mainIndex.css"/>
+    <link rel="stylesheet" href="./css/main.css"/>
     <link rel="stylesheet" href="./css/index.css"/>
 </head>
 
@@ -43,8 +43,12 @@
             <option value="true">启用</option>
         </select>
         <div id="bitrateSet" style="display: none">
-            <span>ASBitrate：</span><input type="text" id="ASBitrate" value="" style="height: 25px;" placeholder="1024">
-            <span>TIASBitrate：</span><input type="text" id="TIASBitrate" value="" style="height: 25px;" placeholder="1024000">
+            <span>ASBitrate：</span><input type="text" id="ASBitrate" value="1024" style="height: 25px;" placeholder="1024">
+            <span>TIASBitrate：</span><input type="text" id="TIASBitrate" value="1024000" style="height: 25px;" placeholder="1024000">
+        </div>
+        <hr>
+        <div>
+            <span>startBitrate：</span><input type="text" id="startBitrate" value="1536" style="height: 25px;" placeholder="1536">
         </div>
     </div>
 
@@ -67,6 +71,16 @@
             <div id="peer"></div>
         </div>
     </section>
+
+    <div>
+        说明：
+        <p>1、默认不启用带宽设置</p>
+        <p>2、启用带宽设置</p>
+        <p>设置answer sdp b=AS值</p>
+        <p>设置answer sdp b=TIAS值</p>
+
+        <p>3、如果startBitrate有值，则设置offer sdp  起始码率x-google-start-bitrate和优先H264编码</p>
+    </div>
 
     <a href="https://webrtc.github.io/samples/">Webrtc samples</a>
     <section id="statistics">

@@ -112,7 +112,7 @@ function legalCheck() {
         }
 
         if(ASBitrate.trim().length === 0 && TIASBitrate.trim().length === 0){
-            console.warn('至少设置一个值')
+            console.warn('至少设置ASBitrate或TIASBitrate')
             result = false
         }
 
@@ -177,7 +177,9 @@ function createPeerConnection() {
             console.log('localPeerConnection offering');
 
             localPeerConnection.setLocalDescription(offer);
-            // offer.sdp = setMediaBitrateAndCodecPrioritys(offer.sdp);
+
+            console.log('start set start bitrate')
+            offer.sdp = setStartBitrate(offer.sdp, 'video');
             console.log(`Offer from pc1 ${offer.sdp}`);
             remotePeerConnection.setRemoteDescription(offer);
 
@@ -185,7 +187,8 @@ function createPeerConnection() {
                 function(answer) {
                     console.log('remotePeerConnection answering');
                     remotePeerConnection.setLocalDescription(answer);
-                    answer.sdp = setMediaBitrateAndCodecPrioritys(answer.sdp);
+                    console.log('set media bitrate')
+                    answer.sdp = setMediaBitrate(answer.sdp);
                     console.log(`Answer from pc2:\n${answer.sdp}`);
                     localPeerConnection.setRemoteDescription(answer);
                 },
