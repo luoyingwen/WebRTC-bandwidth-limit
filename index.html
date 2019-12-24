@@ -19,7 +19,7 @@
 
     <base target="_blank">
 
-    <title>Constraints and statistics</title>
+    <title>Client bitrate control</title>
 
     <!--<link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">-->
     <link rel="stylesheet" href="./css/main.css"/>
@@ -36,35 +36,27 @@
     <h2>通过修改SDP来限制WebRTC带宽</h2>
 
     <div>
-        <p style="color: red">启用带宽设置后可选择性填写ASBitrate或TIASBitrate或两个都设置（不可都为空）</p>
         <span>选择是否设置带宽：</span>
         <select name="" id="bitrateEnabled" onchange="bitrateChoose()" style="width: 200px;height: 30px;">
             <option value="false">不启用</option>
             <option value="true">启用</option>
         </select>
         <div id="bitrateSet" style="display: none">
-            <span>ASBitrate：</span><input type="text" id="ASBitrate" value="1024" style="height: 25px;" placeholder="1024">
-            <span>TIASBitrate：</span><input type="text" id="TIASBitrate" value="1024000" style="height: 25px;" placeholder="1024000">
-        </div>
-        <hr>
-        <div>
-            <span>startBitrate：</span><input type="text" id="startBitrate" value="1536" style="height: 25px;" placeholder="1536">
+            <span style="width: 147px;display: inline-block;text-align: right;color: #f12c13;">ASBitrate：</span>
+            <input type="text" id="ASBitrate" value="1024" style="height: 25px;width: 196px;" placeholder="1024">
         </div>
     </div>
 
     <hr>
 
-    <div>
-        <button id="getMedia">Get media</button>
-        <button id="connect" disabled>Connect</button>
-        <button id="hangup" disabled>Hang Up</button>
-    </div>
     <section id="video">
         <div id="localVideo">
+            <h2>localVideo</h2>
             <video playsinline autoplay muted></video>
             <div></div>
         </div>
         <div id="remoteVideo">
+            <h2>remoteVideo</h2>
             <video playsinline autoplay muted></video>
             <div></div>
             <div id="bitrate"></div>
@@ -73,16 +65,19 @@
     </section>
 
     <div>
-        说明：
-        <p>1、默认不启用带宽设置</p>
-        <p>2、启用带宽设置</p>
-        <p>设置answer sdp b=AS值</p>
-        <p>设置answer sdp b=TIAS值</p>
-
-        <p>3、如果startBitrate有值，则设置offer sdp  起始码率x-google-start-bitrate和优先H264编码</p>
+        <button id="getMedia">Get media</button>
+        <button id="connect" disabled>Connect</button>
+        <button id="hangup" disabled>Hang Up</button>
     </div>
 
-    <a href="https://webrtc.github.io/samples/">Webrtc samples</a>
+    <div>
+
+        <p>After the bandwidth setting is enabled, three processing will be done:</p>
+        <p>(1)Modify b = AS | b = TIAS to the set value (add if not)</p>
+        <p>(2)set x-google-start-bitrate、x-google-start-bitrate、x-google-max-bitrate to the same bitrate value</p>
+        <p>(3)remove goog-remb && transport-cc filed</p>
+    </div>
+    <hr>
     <section id="statistics">
         <div id="senderStats"></div>
         <div id="receiverStats"></div>
@@ -91,7 +86,6 @@
 
 <script src="js/adapter-latest.js"></script>
 <script src="js/ga.js"></script>
-<script src="js/bitrateSet.js" async></script>
 <script src="js/index.js"></script>
 <script src="main.js"></script>
 </body>

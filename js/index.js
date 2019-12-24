@@ -99,19 +99,12 @@ function legalCheck() {
     let select= bitrateList[bitrateList.selectedIndex]
     if(select.value === 'true'){
         let ASBitrate = document.getElementById('ASBitrate').value
-        let TIASBitrate = document.getElementById('TIASBitrate').value
 
         if(isNaN(ASBitrate.trim())){
             console.warn('ASBitrate is required to be a number')
             result = false
         }
-
-        if(isNaN(TIASBitrate.trim())){
-            console.warn('TIASBitrate is required to be a number')
-            result = false
-        }
-
-        if(ASBitrate.trim().length === 0 && TIASBitrate.trim().length === 0){
+        if(ASBitrate.trim().length === 0 ){
             console.warn('至少设置ASBitrate或TIASBitrate')
             result = false
         }
@@ -174,19 +167,19 @@ function createPeerConnection() {
     };
     localPeerConnection.createOffer().then(
         function(offer) {
-            console.log('localPeerConnection offering');
+            console.log('localPeerConnection setLocalDescription:\n', offer.sdp);
 
             localPeerConnection.setLocalDescription(offer);
-            console.log(`Offer from pc1 ${offer.sdp}`);
+            console.log(`remotePeerConnection setRemoteDescription : \n${offer.sdp}`);
             remotePeerConnection.setRemoteDescription(offer);
 
             remotePeerConnection.createAnswer().then(
                 function(answer) {
-                    console.log('remotePeerConnection answering');
+                    console.log('remotePeerConnection setLocalDescription: \n', answer.sdp);
                     remotePeerConnection.setLocalDescription(answer);
 
                     answer.sdp = bitrateControl(answer.sdp);
-                    console.log(`Answer from pc2:\n${answer.sdp}`);
+                    console.log(`localPeerConnection setRemoteDescription:\n${answer.sdp}`);
                     localPeerConnection.setRemoteDescription(answer);
                 },
                 function(err) {

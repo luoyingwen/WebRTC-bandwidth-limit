@@ -197,23 +197,24 @@ function removeREMBField(sdp) {
 }
 
 
-function bitrateControl(sdp, role) {
+function bitrateControl(sdp) {
     if(!sdp){
         console.warn("removeREMBField: Invalid argument");
         return sdp
     }
 
-    var maxBitRate = getConfFromCookies('maxBitRate')
-    if(!maxBitRate){
-        console.warn("maxBitRate: ", maxBitRate)
+    let maxBitRate
+    let bitrateList = document.getElementById('bitrateEnabled').options
+    let select= bitrateList[bitrateList.selectedIndex]
+    console.log("select: ", select.value)
+    if(select.value === 'true'){
+        console.warn('bitrate is enabled')
+        maxBitRate = document.getElementById('ASBitrate').value
+    }else {
+        console.warn('bitrate is disabled')
         return sdp
     }
 
-    if(maxBitRate === 'auto'){
-        console.info('The default bit rate is auto, cannot be modified')
-        console.warn(sdp)
-        return sdp
-    }
     console.info('Get maxBitRate, ' + maxBitRate)
 
     sdp = setMaxBitrate(sdp, 'video', maxBitRate)
