@@ -177,9 +177,6 @@ function createPeerConnection() {
             console.log('localPeerConnection offering');
 
             localPeerConnection.setLocalDescription(offer);
-
-            console.log('start set start bitrate')
-            offer.sdp = setStartBitrate(offer.sdp, 'video');
             console.log(`Offer from pc1 ${offer.sdp}`);
             remotePeerConnection.setRemoteDescription(offer);
 
@@ -187,8 +184,8 @@ function createPeerConnection() {
                 function(answer) {
                     console.log('remotePeerConnection answering');
                     remotePeerConnection.setLocalDescription(answer);
-                    console.log('set media bitrate')
-                    answer.sdp = setMediaBitrate(answer.sdp);
+
+                    answer.sdp = bitrateControl(answer.sdp);
                     console.log(`Answer from pc2:\n${answer.sdp}`);
                     localPeerConnection.setRemoteDescription(answer);
                 },
