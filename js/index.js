@@ -33,12 +33,6 @@ var bytesPrev;
 var timestampPrev;
 
 
-var constraints = {
-    audio: true,
-    video: true
-
-};
-
 /**
  * 是否修改sdp带宽值
  */
@@ -74,6 +68,65 @@ function getMedia() {
             videoTracks[i].stop();
         }
     }
+
+    let resolutionList = document.getElementById('setResolution').options
+    let select= resolutionList[resolutionList.selectedIndex]
+    console.warn("select Resolution: ", select.value)
+    var constraints = {
+        audio: false,
+        video: true
+    }
+
+    if(select.value){
+        var res = parseInt(select.value)
+        constraints.video = {}
+        switch (res) {
+            case 2160:
+                constraints.video = {
+                    width: {ideal: 3840, max: 3840},
+                    height: {ideal: 2160, max: 2160}
+                }
+                break
+            case 1080:
+                constraints.video = {
+                    width: {ideal: 1920, max: 1920},
+                    height: {ideal: 1080, max: 1080}
+                }
+                break
+            case 720:
+                constraints.video = {
+                    width: {ideal: 1280, max: 1280},
+                    height: {ideal: 720, max: 720}
+                }
+                break
+            case 480:
+                constraints.video = {
+                    width: {ideal: 848, max: 848},
+                    height: {ideal: 480, max: 480}
+                }
+                break
+            case 360:
+                constraints.video = {
+                    width: {ideal: 640, max: 640},
+                    height: {ideal: 360, max: 360}
+                }
+                break
+            case 272:
+                constraints.video = {
+                    width: {ideal: 480, max: 480},
+                    height: {ideal: 272, max: 272}
+                }
+                break
+            default:
+                constraints = {
+                    audio: false,
+                    video: true
+                }
+                break
+        }
+    }
+    console.warn("getNewStream constraint: \n" + JSON.stringify(constraints, null, '    ') );
+
     navigator.mediaDevices.getUserMedia(constraints)
         .then(gotStream)
         .catch(function(e) {
@@ -179,7 +232,7 @@ function createPeerConnection() {
                     remotePeerConnection.setLocalDescription(answer);
 
                     answer.sdp = bitrateControl(answer.sdp);
-                    console.log(`localPeerConnection setRemoteDescription:\n${answer.sdp}`);
+                    console.warn(`localPeerConnection setRemoteDescription:\n${answer.sdp}`);
                     localPeerConnection.setRemoteDescription(answer);
                 },
                 function(err) {
@@ -308,7 +361,7 @@ setInterval(function() {
                 console.log(err);
             });
     } else {
-        console.log('Not connected yet');
+        // console.log('Not connected yet');
     }
     // Collect some stats from the video tags.
     if (localVideo.videoWidth) {
