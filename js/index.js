@@ -34,13 +34,13 @@ function bitrateChoose() {
     if(bitrateList && bitrateList.length > 0){
         let select= bitrateList[bitrateList.selectedIndex]
         if(select.value === 'true'){
-            console.log('启用带宽设置')
+            log.info('启用带宽设置')
             bitrateSet.style.display = 'block'
         }else {
-            console.log('不启用带宽设置')
+            log.info('不启用带宽设置')
             bitrateSet.style.display = 'none'
         }
-        console.warn("bitrate select: ", select.label)
+        log.warn("bitrate select: ", select.label)
     }else {
         alert('No device here! plug device and Try again!')
     }
@@ -92,12 +92,12 @@ function getResolution(value, constraints) {
                 break
         }
     }else {
-        console.warn("invalid value!!")
+        log.warn("invalid value!!")
     }
 }
 
 function getMedia() {
-    console.warn('GetUserMedia start!');
+    log.warn('GetUserMedia start!');
     getMediaButton.disabled = true;
     if (localStream) {
         localStream.getTracks().forEach(function(track) {
@@ -111,18 +111,18 @@ function getMedia() {
 
     let resolutionList = document.getElementById('setResolution').options
     let select= resolutionList[resolutionList.selectedIndex]
-    console.warn("select Resolution: ", select.value)
+    log.warn("select Resolution: ", select.value)
     let constraints = {
         audio: false,
         video: true
     }
     getResolution(select.value, constraints)
-    console.warn("getNewStream constraint: \n" + JSON.stringify(constraints, null, '    ') );
+    log.warn("getNewStream constraint: \n" + JSON.stringify(constraints, null, '    ') );
 
     navigator.mediaDevices.getUserMedia(constraints).then(gotStream).catch(function(e) {
-        console.warn("getUserMedia failed!");
+        log.warn("getUserMedia failed!");
         let message = 'getUserMedia error: ' + e.name + '\n' + 'PermissionDeniedError may mean invalid constraints.';
-        console.warn(message);
+        log.warn(message);
         getMediaButton.disabled = false;
     });
 }
@@ -130,7 +130,7 @@ getMedia();
 
 function gotStream(stream) {
     connectButton.disabled = false;
-    console.warn('GetUserMedia succeeded:');
+    log.warn('GetUserMedia succeeded:');
     localStream = stream;
     localVideo.srcObject = stream;
 }
@@ -143,11 +143,11 @@ function legalCheck() {
         let ASBitrate = document.getElementById('ASBitrate').value
 
         if(isNaN(ASBitrate.trim())){
-            console.warn('ASBitrate is required to be a number')
+            log.warn('ASBitrate is required to be a number')
             result = false
         }
         if(ASBitrate.trim().length === 0 ){
-            console.warn('至少设置ASBitrate或TIASBitrate')
+            log.warn('至少设置ASBitrate或TIASBitrate')
             result = false
         }
 
@@ -161,7 +161,7 @@ function createPeerConnection() {
         return
     }
 
-    console.log("begin create peerConnections");
+    log.info("begin create peerConnections");
     connectButton.disabled = true;
     hangupButton.disabled = false;
 
@@ -171,22 +171,22 @@ function createPeerConnection() {
     remotePeerConnection = new RTCPeerConnection(null);
     localStream.getTracks().forEach(
         function(track) {
-            console.log("localPeerConnection addTack!");
+            log.info("localPeerConnection addTack!");
             localPeerConnection.addTrack(
                 track,
                 localStream
             );
         }
     );
-    console.log('localPeerConnection creating offer');
+    log.info('localPeerConnection creating offer');
     localPeerConnection.onnegotiationeeded = function() {
-        console.log('Negotiation needed - localPeerConnection');
+        log.info('Negotiation needed - localPeerConnection');
     };
     remotePeerConnection.onnegotiationeeded = function() {
-        console.log('Negotiation needed - remotePeerConnection');
+        log.info('Negotiation needed - remotePeerConnection');
     };
     localPeerConnection.onicecandidate = function(e) {
-        console.log('Candidate localPeerConnection');
+        log.info('Candidate localPeerConnection');
         remotePeerConnection.addIceCandidate(e.candidate)
             .then(
                 onAddIceCandidateSuccess,
@@ -194,7 +194,7 @@ function createPeerConnection() {
             );
     };
     remotePeerConnection.onicecandidate = function(e) {
-        console.log('Candidate remotePeerConnection');
+        log.info('Candidate remotePeerConnection');
         localPeerConnection.addIceCandidate(e.candidate)
             .then(
                 onAddIceCandidateSuccess,
@@ -203,50 +203,50 @@ function createPeerConnection() {
     };
     remotePeerConnection.ontrack = function(e) {
         if (remoteVideo.srcObject !== e.streams[0]) {
-            console.log('remotePeerConnection got stream');
+            log.info('remotePeerConnection got stream');
             remoteVideo.srcObject = e.streams[0];
         }
     };
     localPeerConnection.createOffer().then(
         function(offer) {
-            console.log('localPeerConnection setLocalDescription:\n', offer.sdp);
+            log.info('localPeerConnection setLocalDescription:\n', offer.sdp);
 
             localPeerConnection.setLocalDescription(offer);
-            console.log(`remotePeerConnection setRemoteDescription : \n${offer.sdp}`);
+            log.info(`remotePeerConnection setRemoteDescription : \n${offer.sdp}`);
             remotePeerConnection.setRemoteDescription(offer);
 
             remotePeerConnection.createAnswer().then(
                 function(answer) {
-                    console.log('remotePeerConnection setLocalDescription: \n', answer.sdp);
+                    log.info('remotePeerConnection setLocalDescription: \n', answer.sdp);
                     remotePeerConnection.setLocalDescription(answer);
 
                     answer.sdp = bitrateControl(answer.sdp);
                     answer.sdp = setProfileLevelId(answer.sdp)
-                    console.warn(`localPeerConnection setRemoteDescription:\n${answer.sdp}`);
+                    log.warn(`localPeerConnection setRemoteDescription:\n${answer.sdp}`);
                     localPeerConnection.setRemoteDescription(answer);
                 },
                 function(err) {
-                    console.log(err);
+                    log.info(err);
                 }
             );
         },
         function(err) {
-            console.log(err);
+            log.info(err);
         }
     );
 }
 
 function onAddIceCandidateSuccess() {
-    console.log('AddIceCandidate success.');
+    log.info('AddIceCandidate success.');
 }
 
 function onAddIceCandidateError(error) {
-    console.log('Failed to add Ice Candidate: ' + error.toString());
+    log.info('Failed to add Ice Candidate: ' + error.toString());
 }
 
 
 function hangup() {
-    console.log('Ending call');
+    log.info('Ending call');
     localPeerConnection.close();
     remotePeerConnection.close();
     window.location.reload();
@@ -255,11 +255,11 @@ function hangup() {
     Promise.all([
         remotePeerConnection.getStats(null)
             .then(showRemoteStats, function(err) {
-                console.log(err);
+                log.info(err);
             }),
         localPeerConnection.getStats(null)
             .then(showLocalStats, function(err) {
-                console.log(err);
+                log.info(err);
             })
     ]).then(() => {
         localPeerConnection = null;
@@ -344,14 +344,14 @@ setInterval(function() {
     if (localPeerConnection && remotePeerConnection) {
         remotePeerConnection.getStats(null)
             .then(showRemoteStats, function(err) {
-                console.log(err);
+                log.info(err);
             });
         localPeerConnection.getStats(null)
             .then(showLocalStats, function(err) {
-                console.log(err);
+                log.info(err);
             });
     } else {
-        // console.log('Not connected yet');
+        // log.info('Not connected yet');
     }
     // Collect some stats from the video tags.
     if (localVideo.videoWidth) {

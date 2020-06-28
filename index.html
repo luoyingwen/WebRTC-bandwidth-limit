@@ -10,11 +10,19 @@
     <link rel="stylesheet" href="./css/main.css"/>
     <link rel="stylesheet" href="./css/index.css"/>
 
-    <!--init vConsole-->
     <script src="./js/vconsole.min.js"></script>
+    <script src="./js/debug.js"></script>
     <script>
+       <!--init vConsole-->
         var vConsole = new VConsole();
         console.log('Hello world');
+
+       var log = { };
+       log.debug = window.debug("sipWebRTC:DEBUG");
+       log.log   = window.debug("sipWebRTC:LOG");
+       log.info  = window.debug("sipWebRTC:INFO");
+       log.warn  = window.debug("sipWebRTC:WARN");
+       log.error = window.debug("sipWebRTC:ERROR");
     </script>
 </head>
 
