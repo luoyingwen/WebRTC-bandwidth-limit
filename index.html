@@ -1,29 +1,21 @@
 <!DOCTYPE html>
-<!--
- *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
- *
- *  Use of this source code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the source
- *  tree.
--->
 <html>
 <head>
-
     <meta charset="utf-8">
-    <meta name="description" content="WebRTC code samples">
-    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
-    <meta itemprop="description" content="Client-side WebRTC code samples">
     <meta itemprop="name" content="WebRTC code samples">
-    <meta name="mobile-web-app-capable" content="yes">
     <meta id="theme-color" name="theme-color" content="#ffffff">
-
     <base target="_blank">
-
     <title>Client bitrate control</title>
-
-    <!--<link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">-->
+    <link rel="shortcut icon" href="#"/>
     <link rel="stylesheet" href="./css/main.css"/>
     <link rel="stylesheet" href="./css/index.css"/>
+
+    <!--init vConsole-->
+    <script src="./js/vconsole.min.js"></script>
+    <script>
+        var vConsole = new VConsole();
+        console.log('Hello world');
+    </script>
 </head>
 
 <body>
@@ -58,7 +50,17 @@
         </div>
     </div>
 
+    <div>
+        <span>设置的profile-level-id：</span>
+        <input type="text" id="setLevelId" style="width: 200px;height: 30px;" value="420028">
+    </div>
+
     <hr>
+    <div>
+        <button id="getMedia" style="display: none">Get media</button>
+        <button id="connect" disabled>连接</button>
+        <button id="hangup" disabled>挂断</button>
+    </div>
 
     <section id="video">
         <div id="localVideo">
@@ -75,14 +77,8 @@
         </div>
     </section>
 
-    <div>
-        <button id="getMedia">Get media</button>
-        <button id="connect" disabled>Connect</button>
-        <button id="hangup" disabled>Hang Up</button>
-    </div>
-
-    <div>
-
+    <div style="clear: both;">
+        <hr>
         <p>After the bandwidth setting is enabled, three processing will be done:</p>
         <p>(1)Modify b = AS | b = TIAS to the set value (add if not)</p>
         <p>(2)set x-google-start-bitrate、x-google-start-bitrate、x-google-max-bitrate to the same bitrate value</p>
@@ -98,6 +94,6 @@
 <script src="js/adapter-latest.js"></script>
 <script src="js/ga.js"></script>
 <script src="js/index.js"></script>
-<script src="main.js"></script>
+<script src="sdp_tool.js"></script>
 </body>
 </html>

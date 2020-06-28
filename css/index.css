@@ -51,14 +51,12 @@ section#video > div {
     margin: 0 20px 0 0;
     vertical-align: top;
     width: calc(50% - 22px);
+    float: left
 }
 section#video > div div {
     font-size: 0.9em;
     margin: 0 0 0.5em 0;
     width:  320px;
-}
-h2 {
-    margin: 0 0 1em 0;
 }
 section#constraints label {
     display: inline-block;

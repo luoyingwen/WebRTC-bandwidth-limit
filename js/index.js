@@ -1,36 +1,28 @@
-/*
- *  Copyright (c) 2015 The WebRTC project authors. All Rights Reserved.
- *
- *  Use of this source code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the source
- *  tree.
- */
-
 'use strict';
 
-var getMediaButton = document.querySelector('button#getMedia');
-var connectButton = document.querySelector('button#connect');
-var hangupButton = document.querySelector('button#hangup');
+let getMediaButton = document.querySelector('button#getMedia');
+let connectButton = document.querySelector('button#connect');
+let hangupButton = document.querySelector('button#hangup');
 
 getMediaButton.onclick = getMedia;
 connectButton.onclick = createPeerConnection;
 hangupButton.onclick = hangup;
 
-var bitrateDiv = document.querySelector('div#bitrate');
-var peerDiv = document.querySelector('div#peer');
-var senderStatsDiv = document.querySelector('div#senderStats');
-var receiverStatsDiv = document.querySelector('div#receiverStats');
+let bitrateDiv = document.querySelector('div#bitrate');
+let peerDiv = document.querySelector('div#peer');
+let senderStatsDiv = document.querySelector('div#senderStats');
+let receiverStatsDiv = document.querySelector('div#receiverStats');
 
-var localVideo = document.querySelector('div#localVideo video');
-var remoteVideo = document.querySelector('div#remoteVideo video');
-var localVideoStatsDiv = document.querySelector('div#localVideo div');
-var remoteVideoStatsDiv = document.querySelector('div#remoteVideo div');
+let localVideo = document.querySelector('div#localVideo video');
+let remoteVideo = document.querySelector('div#remoteVideo video');
+let localVideoStatsDiv = document.querySelector('div#localVideo div');
+let remoteVideoStatsDiv = document.querySelector('div#remoteVideo div');
 
-var localPeerConnection;
-var remotePeerConnection;
-var localStream;
-var bytesPrev;
-var timestampPrev;
+let localPeerConnection;
+let remotePeerConnection;
+let localStream;
+let bytesPrev;
+let timestampPrev;
 
 
 /**
@@ -54,31 +46,9 @@ function bitrateChoose() {
     }
 }
 
-// getMedia();
-
-function getMedia() {
-    console.warn('GetUserMedia start!');
-    getMediaButton.disabled = true;
-    if (localStream) {
-        localStream.getTracks().forEach(function(track) {
-            track.stop();
-        });
-        var videoTracks = localStream.getVideoTracks();
-        for (var i = 0; i !== videoTracks.length; ++i) {
-            videoTracks[i].stop();
-        }
-    }
-
-    let resolutionList = document.getElementById('setResolution').options
-    let select= resolutionList[resolutionList.selectedIndex]
-    console.warn("select Resolution: ", select.value)
-    var constraints = {
-        audio: false,
-        video: true
-    }
-
-    if(select.value){
-        var res = parseInt(select.value)
+function getResolution(value, constraints) {
+    if(value){
+        let res = parseInt(value)
         constraints.video = {}
         switch (res) {
             case 2160:
@@ -118,26 +88,45 @@ function getMedia() {
                 }
                 break
             default:
-                constraints = {
-                    audio: false,
-                    video: true
-                }
+                constraints = {audio: false, video: true}
                 break
         }
+    }else {
+        console.warn("invalid value!!")
     }
-    console.warn("getNewStream constraint: \n" + JSON.stringify(constraints, null, '    ') );
-
-    navigator.mediaDevices.getUserMedia(constraints)
-        .then(gotStream)
-        .catch(function(e) {
-            console.warn("getUserMedia failed!");
-            var message = 'getUserMedia error: ' + e.name + '\n' +
-                'PermissionDeniedError may mean invalid constraints.';
-            console.warn(message);
-            getMediaButton.disabled = false;
-        });
 }
 
+function getMedia() {
+    console.warn('GetUserMedia start!');
+    getMediaButton.disabled = true;
+    if (localStream) {
+        localStream.getTracks().forEach(function(track) {
+            track.stop();
+        });
+        let videoTracks = localStream.getVideoTracks();
+        for (let i = 0; i !== videoTracks.length; ++i) {
+            videoTracks[i].stop();
+        }
+    }
+
+    let resolutionList = document.getElementById('setResolution').options
+    let select= resolutionList[resolutionList.selectedIndex]
+    console.warn("select Resolution: ", select.value)
+    let constraints = {
+        audio: false,
+        video: true
+    }
+    getResolution(select.value, constraints)
+    console.warn("getNewStream constraint: \n" + JSON.stringify(constraints, null, '    ') );
+
+    navigator.mediaDevices.getUserMedia(constraints).then(gotStream).catch(function(e) {
+        console.warn("getUserMedia failed!");
+        let message = 'getUserMedia error: ' + e.name + '\n' + 'PermissionDeniedError may mean invalid constraints.';
+        console.warn(message);
+        getMediaButton.disabled = false;
+    });
+}
+getMedia();
 
 function gotStream(stream) {
     connectButton.disabled = false;
@@ -232,6 +221,7 @@ function createPeerConnection() {
                     remotePeerConnection.setLocalDescription(answer);
 
                     answer.sdp = bitrateControl(answer.sdp);
+                    answer.sdp = setProfileLevelId(answer.sdp)
                     console.warn(`localPeerConnection setRemoteDescription:\n${answer.sdp}`);
                     localPeerConnection.setRemoteDescription(answer);
                 },
@@ -286,16 +276,16 @@ function hangup() {
 }
 
 function showRemoteStats(results) {
-    var statsString = dumpStats(results);
+    let statsString = dumpStats(results);
 
     receiverStatsDiv.innerHTML = '<h2>Receiver stats</h2>' + statsString;
     // calculate video bitrate
     results.forEach(function(report) {
-        var now = report.timestamp;
+        let now = report.timestamp;
 
-        var bitrate;
+        let bitrate;
         if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
-            var bytes = report.bytesReceived;
+            let bytes = report.bytesReceived;
             if (timestampPrev) {
                 bitrate = 8 * (bytes - bytesPrev) / (now - timestampPrev);
                 bitrate = Math.floor(bitrate);
@@ -310,8 +300,8 @@ function showRemoteStats(results) {
     });
 
     // figure out the peer's ip
-    var activeCandidatePair = null;
-    var remoteCandidate = null;
+    let activeCandidatePair = null;
+    let remoteCandidate = null;
 
     // Search for the candidate pair, spec-way first.
     results.forEach(function(report) {
@@ -346,7 +336,7 @@ function showRemoteStats(results) {
 }
 
 function showLocalStats(results) {
-    var statsString = dumpStats(results);
+    let statsString = dumpStats(results);
     senderStatsDiv.innerHTML = '<h2>Sender stats</h2>' + statsString;
 }
 // Display statistics
@@ -374,10 +364,10 @@ setInterval(function() {
     }
 }, 1000);
 
-// Dumping a stats variable as a string.
+// Dumping a stats letiable as a string.
 // might be named toString?
 function dumpStats(results) {
-    var statsString = '';
+    let statsString = '';
     results.forEach(function(res) {
         statsString += '<h3>Report type=';
         statsString += res.type;

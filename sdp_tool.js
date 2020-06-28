@@ -10,10 +10,10 @@ function getConfFromCookies(key) {
         return undefined
     }
 
-    var result
+    let result
     if (document.cookie.length > 0) {
         key = key + "=";
-        var startIndex = document.cookie.indexOf(key)
+        let startIndex = document.cookie.indexOf(key)
         if (startIndex >= 0) {
             result = document.cookie.substring(startIndex + key.length).split(";")[0];
         }
@@ -37,7 +37,7 @@ function setMaxBitrate(sdp, media, ASBitrate) {
     }
 
     // find m line place
-    var line = sdp.indexOf('m=' + media)
+    let line = sdp.indexOf('m=' + media)
     if(line === -1){
         console.warn('Could not find the m line for ' + media)
         return sdp
@@ -46,11 +46,11 @@ function setMaxBitrate(sdp, media, ASBitrate) {
 
     // add a new b line
     function addNewLine(_sdp, type, bitrate) {
-        var lines = _sdp.split("\n")
-        var mline = -1
+        let lines = _sdp.split("\n")
+        let mline = -1
 
         // find m line place
-        for(var i = 0; i<lines.length; i++){
+        for(let i = 0; i<lines.length; i++){
             if(lines[i].indexOf('m=' + media) >= 0){
                 mline = i
                 break
@@ -68,14 +68,14 @@ function setMaxBitrate(sdp, media, ASBitrate) {
 
         // add a new b=AS or b=TIAS line
         console.warn('Adding new b line before line ' + mline)
-        var newLines = lines.slice(0, mline)
+        let newLines = lines.slice(0, mline)
         newLines.push('b=' + type + ':' + bitrate)
         newLines = newLines.concat(lines.slice(mline, lines.length))
 
         return newLines.join('\n')
     }
 
-    var replacement
+    let replacement
     if(sdp.indexOf('b=AS') >= 0){
         console.warn('Replaced b=AS line at line '+ line)
         replacement = "b=AS:" + ASBitrate
@@ -84,7 +84,7 @@ function setMaxBitrate(sdp, media, ASBitrate) {
         sdp = addNewLine(sdp, 'AS', ASBitrate)
     }
 
-    var TIASBitrate = ASBitrate * 1000
+    let TIASBitrate = ASBitrate * 1000
     if(sdp.indexOf('b=TIAS') >= 0){
         console.warn('Replaced b=TIAS line at line '+ line)
         replacement = "b=TIAS:" + TIASBitrate
@@ -104,28 +104,28 @@ function setMaxBitrate(sdp, media, ASBitrate) {
  * @returns {string}
  */
 function setXgoogleBitrate(sdp, bitrate) {
-    var lines = sdp.split("\n")
-    var replacement
+    let lines = sdp.split("\n")
+    let replacement
 
     // get all pt number, except rtx\red\ulpfec
-    var ptArr = []
-    var validLine = RegExp.prototype.test.bind(/^([a-z])=(.*)/);
+    let ptArr = []
+    let validLine = RegExp.prototype.test.bind(/^([a-z])=(.*)/);
     sdp.split(/(\r\n|\r|\n)/).filter(validLine).forEach(function(line) {
         if(line.indexOf('a=rtpmap') >= 0 && line.indexOf('rtx') < 0 && line.indexOf('red') < 0 && line.indexOf('ulpfec') < 0){
-            var pt =line.split(" ")[0].split(":")[1]
+            let pt =line.split(" ")[0].split(":")[1]
             ptArr.push(pt)
         }
     });
     console.warn(ptArr)
 
     // add new a=fmtp line if rtpmap is not have a=fmtp line
-    for(var j = 0; j<ptArr.length; j++){
+    for(let j = 0; j<ptArr.length; j++){
         if(sdp.indexOf('a=fmtp:' + ptArr[j]) < 0){
-            for(var k = 0; k<lines.length; k++){
+            for(let k = 0; k<lines.length; k++){
                 if(lines[k].indexOf('a=rtpmap:' + ptArr[j]) >= 0){
                     // Skip a=rtpmap lines for encoding
                     k++
-                    var newLines = lines.slice(0, k)
+                    let newLines = lines.slice(0, k)
                     newLines.push('a=fmtp:' + ptArr[j])
                     lines = newLines.concat(lines.slice(k, lines.length))
                 }
@@ -136,7 +136,7 @@ function setXgoogleBitrate(sdp, bitrate) {
 
     // 考虑：a=fmtp:100 这种形式，添加时首个不要分号，要空格
     // 有的PT没有x-google-min-bitrate=1024;x-google-start-bitrate=1536;x-google-max-bitrate=2048字段： 有则修改，没有则添加
-    for(var i = 0; i<lines.length; i++){
+    for(let i = 0; i<lines.length; i++){
         if(lines[i].indexOf('a=fmtp:') >= 0){
             // filter rtx and ulpfec
             if(lines[i].indexOf('apt=') >= 0 || lines[i].indexOf('ulpfec') >= 0){
@@ -184,9 +184,9 @@ function setXgoogleBitrate(sdp, bitrate) {
  * @returns {string}
  */
 function removeREMBField(sdp) {
-    var lines = sdp.split("\n")
+    let lines = sdp.split("\n")
 
-    for(var i = 0; i<lines.length; i++){
+    for(let i = 0; i<lines.length; i++){
         if (lines[i].indexOf('goog-remb') >= 0 || lines[i].indexOf('transport-cc') >= 0) {
             console.info('remove goog-remb or transport-cc filed')
             lines.splice(i, 1)
@@ -224,12 +224,43 @@ function bitrateControl(sdp) {
 }
 
 function setCookie(name, value) {
-    var date = new Date();
-    var ms = 3000 * 3600 * 1000;
+    let date = new Date();
+    let ms = 3000 * 3600 * 1000;
     date.setTime(date.getTime() + ms);
     document.cookie= name + "=" + value + ";expires="+date.toGMTString() +";path=/;domain=.ipvideotalk.com";
 }
 
 setCookie('maxBitRate', 2048)
 setCookie('maxResolution', 1080)
+
+/**
+ * 修改remote SDP 中的profile-level-id
+ * @param sdp
+ * @returns {*}
+ */
+function setProfileLevelId(sdp) {
+    if(!sdp){
+        console.warn("removeREMBField: Invalid argument");
+        return sdp
+    }
+    let levelIdc = document.getElementById('setLevelId').value
+    if(!levelIdc){
+        console.warn("empty string")
+        return
+    }
+    console.warn("设置的profile-level-id为： ", levelIdc)
+
+    let lines = sdp.split("\n")
+    for(let i = 0; i<lines.length; i++){
+        if (lines[i].indexOf('profile-level-id=') >= 0 ) {
+            let replacement = 'profile-level-id=' + levelIdc
+            lines[i] = lines[i].replace(/profile-level-id=([a-zA-Z0-9]{6})/, replacement);
+            console.info('修改profile-level-id ')
+        }
+    }
+
+    sdp = lines.join('\n')
+    return sdp
+}
+
 
