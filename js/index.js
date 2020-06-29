@@ -210,20 +210,44 @@ function createPeerConnection() {
     localPeerConnection.createOffer().then(
         function(offer) {
             log.info('localPeerConnection setLocalDescription:\n', offer.sdp);
-
             localPeerConnection.setLocalDescription(offer);
+
             log.info(`remotePeerConnection setRemoteDescription : \n${offer.sdp}`);
-            remotePeerConnection.setRemoteDescription(offer);
+            remotePeerConnection.setRemoteDescription(offer).then(function () {
+                log.info('remotePeerConnection setRemoteDescription success')
+            }).catch(function (err) {
+                log.error(err)
+            })
 
             remotePeerConnection.createAnswer().then(
                 function(answer) {
                     log.info('remotePeerConnection setLocalDescription: \n', answer.sdp);
-                    remotePeerConnection.setLocalDescription(answer);
+                    remotePeerConnection.setLocalDescription(answer).then(function () {
+                        log.info('setLocalDescription success')
+                    }).catch(function (err) {
+                        log.error(err)
+                    })
 
-                    answer.sdp = bitrateControl(answer.sdp);
-                    answer.sdp = setProfileLevelId(answer.sdp)
+                    // answer.sdp = bitrateControl(answer.sdp);
+                    // answer.sdp = setProfileLevelId(answer.sdp)
+
+                    let parsedSdp = SDPTools.parseSDP(answer.sdp)
+                    for(let i = 0; i < parsedSdp.media.length; i++){
+                        let media = parsedSdp.media[i]
+                        if(media.type === 'video'){
+                            let codec = ['H264']
+                            console.warn("删除H264编码： ")
+                            SDPTools.removeCodecByName(parsedSdp, i, codec)
+                        }
+                    }
+                    answer.sdp = SDPTools.writeSDP(parsedSdp)
+
                     log.warn(`localPeerConnection setRemoteDescription:\n${answer.sdp}`);
-                    localPeerConnection.setRemoteDescription(answer);
+                    localPeerConnection.setRemoteDescription(answer).then(function () {
+                        log.info('localPeerConnection setRemoteDescription success')
+                    }).catch(function (err) {
+                        log.error(err)
+                    })
                 },
                 function(err) {
                     log.info(err);
