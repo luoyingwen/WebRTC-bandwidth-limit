@@ -234,11 +234,12 @@ function createPeerConnection() {
                     let parsedSdp = SDPTools.parseSDP(answer.sdp)
                     for(let i = 0; i < parsedSdp.media.length; i++){
                         let media = parsedSdp.media[i]
-                        if(media.type === 'video'){
-                            let codec = ['H264']
-                            console.warn("删除H264编码： ")
-                            SDPTools.removeCodecByName(parsedSdp, i, codec)
-                        }
+                        let codec = ['VP9','VP8']
+                        console.warn("删除VP8、VP9编码")
+                        SDPTools.removeCodecByName(parsedSdp, i, codec)
+
+                        SDPTools.removeRembAndTransportCC(parsedSdp, i)
+                        media.payloads = media.payloads.trim()
                     }
                     answer.sdp = SDPTools.writeSDP(parsedSdp)
 
