@@ -210,7 +210,38 @@ function createPeerConnection() {
     localPeerConnection.createOffer().then(
         function(offer) {
             log.info('localPeerConnection setLocalDescription:\n', offer.sdp);
-            localPeerConnection.setLocalDescription(offer);
+            localPeerConnection.setLocalDescription(offer).then(function () {
+                var sender = localPeerConnection.getSenders()[0]
+                var videoParameters = sender.getParameters();
+                var maxBitrate = document.getElementById('maxBitrate').value
+                if(maxBitrate){
+                    var encodingParameterList = {
+                        active: true,             // 设置false后，这个编码就不生效
+                        // degradationPreference: 'maintain-framerate',
+                        priority: 'high',
+                        networkPriority: "high",
+                        maxBitrate: maxBitrate,
+                        // maxFramerate: 15,
+                    }
+                    if(videoParameters.encodings && videoParameters.encodings.length){
+                        videoParameters.encodings[0] = encodingParameterList;
+                    }else {
+                        videoParameters.encodings = []
+                        videoParameters.encodings[0] = encodingParameterList;
+                    }
+
+                    console.warn("videoParameters: \n", JSON.stringify(videoParameters, null, '   '))
+                    sender.setParameters(videoParameters).then(function () {
+                        console.warn("setParameters set success!!!")
+                    }).catch(function (error) {
+                        console.error(error)
+                    })
+                }else {
+                    console.warn("maxBitrate 不存在，不设置！！")
+                }
+            }).catch(function (error) {
+                console.error(error)
+            })
 
             log.info(`remotePeerConnection setRemoteDescription : \n${offer.sdp}`);
             remotePeerConnection.setRemoteDescription(offer).then(function () {
@@ -228,8 +259,16 @@ function createPeerConnection() {
                         log.error(err)
                     })
 
-                    // answer.sdp = bitrateControl(answer.sdp);
-                    // answer.sdp = setProfileLevelId(answer.sdp)
+                    let bitrateList = document.getElementById('bitrateEnabled').options
+                    let select= bitrateList[bitrateList.selectedIndex]
+                    console.log("select: ", select.value)
+                    if(select.value === 'true'){
+                        console.warn('bitrate is enabled')
+                        answer.sdp = bitrateControl(answer.sdp);
+                        answer.sdp = setProfileLevelId(answer.sdp)
+                    }else {
+                        console.warn('bitrate is disabled')
+                    }
 
                     let parsedSdp = SDPTools.parseSDP(answer.sdp)
                     for(let i = 0; i < parsedSdp.media.length; i++){
@@ -242,6 +281,7 @@ function createPeerConnection() {
                         media.payloads = media.payloads.trim()
                     }
                     answer.sdp = SDPTools.writeSDP(parsedSdp)
+                    answer.sdp = removeAllBitrateControl(answer.sdp);
 
                     log.warn(`localPeerConnection setRemoteDescription:\n${answer.sdp}`);
                     localPeerConnection.setRemoteDescription(answer).then(function () {

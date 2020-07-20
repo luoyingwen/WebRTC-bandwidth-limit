@@ -243,6 +243,7 @@ function setProfileLevelId(sdp) {
         console.warn("removeREMBField: Invalid argument");
         return sdp
     }
+
     let levelIdc = document.getElementById('setLevelId').value
     if(!levelIdc){
         console.warn("empty string")
@@ -264,3 +265,34 @@ function setProfileLevelId(sdp) {
 }
 
 
+function removeAllBitrateControl(sdp) {
+    console.warn("去除所有码率协商参数！！！！")
+    if(!sdp){
+        console.warn("bitrateControl: Invalid argument");
+        return sdp
+    }
+    var lines = sdp.split("\n")
+
+    for(var i = 0; i<lines.length; i++){
+        if (lines[i].indexOf('goog-remb') >= 0 || lines[i].indexOf('transport-cc') >= 0 || lines[i].indexOf('b=') >= 0) {
+            console.warn('remove goog-remb or transport-cc filed')
+            lines.splice(i, 1)
+            i--
+        }
+
+        if(lines[i].indexOf('x-google-min-bitrate') >= 0){
+            var replacement = "x-google-min-bitrate=" + 2048
+            lines[i] = lines[i].replace(/x-google-min-bitrate=([a-zA-Z0-9]{1,8})/, replacement);
+        }
+        if(lines[i].indexOf('x-google-start-bitrate') >= 0){
+            lines[i] = lines[i].replace(/x-google-start-bitrate=([a-zA-Z0-9]{1,8})/, '');
+        }
+        if(lines[i].indexOf('x-google-max-bitrate') >= 0){
+            lines[i] = lines[i].replace(/x-google-max-bitrate=([a-zA-Z0-9]{1,8})/, 'x-google-max-bitrate=2048');
+        }
+    }
+
+    sdp = lines.join('\n')
+    console.warn("sdp: ", sdp)
+    return sdp
+}
