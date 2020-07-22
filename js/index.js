@@ -94,6 +94,8 @@ function getResolution(value, constraints) {
     }else {
         log.warn("invalid value!!")
     }
+
+    return constraints
 }
 
 function getMedia() {
@@ -116,7 +118,7 @@ function getMedia() {
         audio: false,
         video: true
     }
-    getResolution(select.value, constraints)
+    constraints = getResolution(select.value, constraints)
     log.warn("getNewStream constraint: \n" + JSON.stringify(constraints, null, '    ') );
 
     navigator.mediaDevices.getUserMedia(constraints).then(gotStream).catch(function(e) {
@@ -127,6 +129,10 @@ function getMedia() {
     });
 }
 getMedia();
+
+document.getElementById('setResolution').onchange = function () {
+    getMedia()
+}
 
 function gotStream(stream) {
     connectButton.disabled = false;
@@ -213,22 +219,22 @@ function createPeerConnection() {
             localPeerConnection.setLocalDescription(offer).then(function () {
                 var sender = localPeerConnection.getSenders()[0]
                 var videoParameters = sender.getParameters();
+                if (JSON.stringify(videoParameters) === '{}') {
+                    videoParameters.encodings = []
+                }
+
                 var maxBitrate = document.getElementById('maxBitrate').value
                 if(maxBitrate){
                     var encodingParameterList = {
                         active: true,             // 设置false后，这个编码就不生效
                         priority: 'high',
                         networkPriority: "high",
-                        maxBitrate: maxBitrate,
+                        maxBitrate: maxBitrate || 1024000,
                         // maxFramerate: 15,     // 帧率
                     }
-                    if(videoParameters.encodings && videoParameters.encodings.length){
-                        videoParameters.encodings[0] = encodingParameterList;
-                    }else {
-                        videoParameters.encodings = []
-                        videoParameters.encodings[0] = encodingParameterList;
-                    }
+
                     videoParameters.degradationPreference =  'maintain-framerate'    // maintain-framerate维持帧率；maintain-resolution 维持分辨率，balanced 保持平衡
+                    videoParameters.encodings[0] = encodingParameterList;
 
                     console.warn("videoParameters: \n", JSON.stringify(videoParameters, null, '   '))
                     sender.setParameters(videoParameters).then(function () {
