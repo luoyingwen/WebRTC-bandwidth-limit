@@ -46,49 +46,53 @@ function bitrateChoose() {
     }
 }
 
-function getResolution(value, constraints) {
+function getResolution(value) {
+    var constraints = {}
     if(value){
         let res = parseInt(value)
-        constraints.video = {}
+        constraints = {}
         switch (res) {
             case 2160:
-                constraints.video = {
-                    width: {ideal: 3840, max: 3840},
-                    height: {ideal: 2160, max: 2160}
+                constraints = {
+                    width: 3840,
+                    height: 2160
                 }
                 break
             case 1080:
-                constraints.video = {
-                    width: {ideal: 1920, max: 1920},
-                    height: {ideal: 1080, max: 1080}
+                constraints = {
+                    width: 1920,
+                    height: 1080
                 }
                 break
             case 720:
-                constraints.video = {
-                    width: {ideal: 1280, max: 1280},
-                    height: {ideal: 720, max: 720}
+                constraints = {
+                    width: 1280,
+                    height: 720
                 }
                 break
             case 480:
-                constraints.video = {
-                    width: {ideal: 848, max: 848},
-                    height: {ideal: 480, max: 480}
+                constraints = {
+                    width: 848,
+                    height: 480
                 }
                 break
             case 360:
-                constraints.video = {
-                    width: {ideal: 640, max: 640},
-                    height: {ideal: 360, max: 360}
+                constraints = {
+                    width: 640,
+                    height: 360
                 }
                 break
             case 272:
-                constraints.video = {
-                    width: {ideal: 480, max: 480},
-                    height: {ideal: 272, max: 272}
+                constraints = {
+                    width: 480,
+                    height: 272
                 }
                 break
             default:
-                constraints = {audio: false, video: true}
+                constraints = {
+                    width: 640,
+                    height: 360
+                }
                 break
         }
     }else {
@@ -114,13 +118,26 @@ function getMedia() {
     let resolutionList = document.getElementById('setResolution').options
     let select= resolutionList[resolutionList.selectedIndex]
     log.warn("select Resolution: ", select.value)
+    var frameRate = document.getElementById('setFrameRate').value
+    frameRate = parseInt(frameRate) || 15
+    console.warn("get frameRate " + frameRate)
+    var getCons = getResolution(select.value)
     let constraints = {
         audio: false,
-        video: true
+        video: {
+            frameRate: frameRate,
+            width: {
+                ideal: getCons.width || 1280,
+                max: getCons.width || 1280
+            },
+            height: {
+                ideal: getCons.height || 720,
+                max: getCons.height || 720
+            }
+        }
     }
-    constraints = getResolution(select.value, constraints)
-    log.warn("getNewStream constraint: \n" + JSON.stringify(constraints, null, '    ') );
 
+    log.warn("getNewStream constraint: \n" + JSON.stringify(constraints, null, '    ') );
     navigator.mediaDevices.getUserMedia(constraints).then(gotStream).catch(function(e) {
         log.warn("getUserMedia failed!");
         let message = 'getUserMedia error: ' + e.name + '\n' + 'PermissionDeniedError may mean invalid constraints.';
@@ -274,7 +291,6 @@ function createPeerConnection() {
                         ASBitrate = ASBitrate || 4096
                         SDPTools.removeCodecByName(parsedSdp, i, codec)
                         SDPTools.setXgoogleBitrate(parsedSdp, ASBitrate, i)
-                        // debugger
                         SDPTools.removeRembAndTransportCC(parsedSdp, i)
                         media.payloads = media.payloads.trim()
                     }
