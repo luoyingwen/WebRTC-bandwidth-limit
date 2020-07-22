@@ -47,19 +47,19 @@
         </select>
     </div>
 
-    <div style="display: none;">
+    <div>
         <span>选择是否设置带宽：</span>
         <select name="" id="bitrateEnabled" onchange="bitrateChoose()" style="width: 200px;height: 30px;">
-            <option value="false">不启用</option>
             <option value="true">启用</option>
+            <option value="false">不启用</option>
         </select>
-        <div id="bitrateSet" style="display: none">
+        <div id="bitrateSet">
             <span style="width: 147px;display: inline-block;text-align: right;color: #f12c13;">ASBitrate：</span>
-            <input type="text" id="ASBitrate" value="1024" style="height: 25px;width: 196px;" placeholder="1024">
+            <input type="text" id="ASBitrate" value="4096" style="height: 25px;width: 196px;" placeholder="1024">
         </div>
     </div>
 
-    <div  style="display: none;">
+    <div style="display: none">
         <span>设置的profile-level-id：</span>
         <input type="text" id="setLevelId" style="width: 200px;height: 30px;" value="420028">
     </div>

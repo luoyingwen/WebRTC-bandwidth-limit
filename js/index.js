@@ -265,29 +265,20 @@ function createPeerConnection() {
                         log.error(err)
                     })
 
-                    let bitrateList = document.getElementById('bitrateEnabled').options
-                    let select= bitrateList[bitrateList.selectedIndex]
-                    console.log("select: ", select.value)
-                    if(select.value === 'true'){
-                        console.warn('bitrate is enabled')
-                        answer.sdp = bitrateControl(answer.sdp);
-                        answer.sdp = setProfileLevelId(answer.sdp)
-                    }else {
-                        console.warn('bitrate is disabled')
-                    }
-
                     let parsedSdp = SDPTools.parseSDP(answer.sdp)
                     for(let i = 0; i < parsedSdp.media.length; i++){
                         let media = parsedSdp.media[i]
                         let codec = ['VP9','VP8']
                         console.warn("删除VP8、VP9编码")
+                        var ASBitrate= document.getElementById('ASBitrate').value
+                        ASBitrate = ASBitrate || 4096
                         SDPTools.removeCodecByName(parsedSdp, i, codec)
-
+                        SDPTools.setXgoogleBitrate(parsedSdp, ASBitrate, i)
+                        // debugger
                         SDPTools.removeRembAndTransportCC(parsedSdp, i)
                         media.payloads = media.payloads.trim()
                     }
                     answer.sdp = SDPTools.writeSDP(parsedSdp)
-                    answer.sdp = removeAllBitrateControl(answer.sdp);
 
                     log.warn(`localPeerConnection setRemoteDescription:\n${answer.sdp}`);
                     localPeerConnection.setRemoteDescription(answer).then(function () {

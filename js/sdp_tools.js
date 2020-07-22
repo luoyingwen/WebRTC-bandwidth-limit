@@ -1243,20 +1243,22 @@ let SDPTools = {
                         config = config + ';x-google-min-bitrate=' + bitrate
                     }
 
-                    if (config.indexOf('x-google-start-bitrate=') >= 0) {
-                        config = config.replace(/x-google-start-bitrate=([a-zA-Z0-9]{1,8})/, 'x-google-start-bitrate=' + bitrate)
-                    } else {
-                        config = config + ';x-google-start-bitrate=' + bitrate
-                    }
+                    // if (config.indexOf('x-google-start-bitrate=') >= 0) {
+                    //     config = config.replace(/x-google-start-bitrate=([a-zA-Z0-9]{1,8})/, 'x-google-start-bitrate=' + bitrate)
+                    // } else {
+                    //     config = config + ';x-google-start-bitrate=' + bitrate
+                    // }
 
                     if (config.indexOf('x-google-max-bitrate=') >= 0) {
                         config = config.replace(/x-google-max-bitrate=([a-zA-Z0-9]{1,8})/, 'x-google-max-bitrate=' + bitrate)
                     } else {
                         config = config + ';x-google-max-bitrate=' + bitrate
                     }
+                    media.fmtp[i].config = config
                 }
             }
         }
+        return media
     },
 
     /**
@@ -1269,12 +1271,12 @@ let SDPTools = {
         if(index || index === 0){
             let h264Codec = this.getCodecByName(session, index, ['H264'])
             let media = session.media[index]
-            this.setXgoogle(media, h264Codec, bitrate)
+            session.media[index] = this.setXgoogle(media, h264Codec, bitrate)
         }else {
             for(let i = 0; i<session.media.length; i++){
                 let h264Codec = this.getCodecByName(session, i, ['H264'])
                 let media = session.media[i]
-                this.setXgoogle(media, h264Codec, bitrate)
+                session.media[i] = this.setXgoogle(media, h264Codec, bitrate)
             }
         }
     },
