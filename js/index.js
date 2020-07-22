@@ -238,20 +238,20 @@ function createPeerConnection() {
                 var videoParameters = sender.getParameters();
                 if (JSON.stringify(videoParameters) === '{}') {
                     videoParameters.encodings = []
+                    videoParameters.encodings[0] = {}
                 }
 
-                var maxBitrate = document.getElementById('maxBitrate').value
-                if(maxBitrate){
-                    var encodingParameterList = {
-                        active: true,             // 设置false后，这个编码就不生效
-                        priority: 'high',
-                        networkPriority: "high",
-                        maxBitrate: maxBitrate || 1024000,
-                        // maxFramerate: 15,     // 帧率
+                var maxBitRate = document.getElementById('maxBitrate').value
+                if(maxBitRate){
+                    if(!maxBitRate){
+                        console.warn('get invalid maxBitRate: ' + maxBitRate)
+                        maxBitRate = 1024000
+                    }else {
+                        maxBitRate = maxBitRate * 1000
                     }
 
+                    videoParameters.encodings[0].maxBitrate = maxBitRate
                     videoParameters.degradationPreference =  'maintain-framerate'    // maintain-framerate维持帧率；maintain-resolution 维持分辨率，balanced 保持平衡
-                    videoParameters.encodings[0] = encodingParameterList;
 
                     console.warn("videoParameters: \n", JSON.stringify(videoParameters, null, '   '))
                     sender.setParameters(videoParameters).then(function () {
