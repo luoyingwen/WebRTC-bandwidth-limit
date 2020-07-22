@@ -36,7 +36,7 @@
 
     <h2>通过修改SDP来限制WebRTC带宽</h2>
     <div>
-        <span style="width: 144px;display: inline-block;">设置分辨率：</span>
+        <span style="width: 144px;display: inline-block;">选择分辨率：</span>
         <select name="" id="setResolution" style="width: 200px;height: 30px;">
             <option value="1080">1080</option>
             <option value="720">720</option>
@@ -47,7 +47,7 @@
         </select>
     </div>
 
-    <div>
+    <div style="display: none;">
         <span>选择是否设置带宽：</span>
         <select name="" id="bitrateEnabled" onchange="bitrateChoose()" style="width: 200px;height: 30px;">
             <option value="false">不启用</option>
@@ -59,13 +59,13 @@
         </div>
     </div>
 
-    <div>
+    <div  style="display: none;">
         <span>设置的profile-level-id：</span>
         <input type="text" id="setLevelId" style="width: 200px;height: 30px;" value="420028">
     </div>
 
     <div>
-        <span>设置的maxBitrate：</span>
+        <span>选择的maxBitrate：</span>
         <input type="text" id="maxBitrate" style="width: 200px;height: 30px;" value="1024000">
     </div>
 
