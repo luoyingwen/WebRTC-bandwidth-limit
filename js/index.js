@@ -24,6 +24,28 @@ let localStream;
 let bytesPrev;
 let timestampPrev;
 
+
+/**
+ * 是否修改sdp带宽值
+ */
+function bitrateChoose() {
+    let bitrateSet = document.getElementById('bitrateSet')
+    let bitrateList = document.getElementById('bitrateEnabled').options
+    if(bitrateList && bitrateList.length > 0){
+        let select= bitrateList[bitrateList.selectedIndex]
+        if(select.value === 'true'){
+            log.info('启用带宽设置')
+            bitrateSet.style.display = 'block'
+        }else {
+            log.info('不启用带宽设置')
+            bitrateSet.style.display = 'none'
+        }
+        log.warn("bitrate select: ", select.label)
+    }else {
+        alert('No device here! plug device and Try again!')
+    }
+}
+
 function getResolution(value) {
     var constraints = {}
     if(value){
@@ -136,7 +158,32 @@ function gotStream(stream) {
     localVideo.srcObject = stream;
 }
 
+function legalCheck() {
+    let result = true
+    let bitrateList = document.getElementById('bitrateEnabled').options
+    let select= bitrateList[bitrateList.selectedIndex]
+    if(select.value === 'true'){
+        let ASBitrate = document.getElementById('ASBitrate').value
+
+        if(isNaN(ASBitrate.trim())){
+            log.warn('ASBitrate is required to be a number')
+            result = false
+        }
+        if(ASBitrate.trim().length === 0 ){
+            log.warn('至少设置ASBitrate或TIASBitrate')
+            result = false
+        }
+
+    }
+    return result
+}
+
 function createPeerConnection() {
+    if(!legalCheck()){
+        alert('请输入ASBitrate、TIASBitrate并确保为数字')
+        return
+    }
+
     log.info("begin create peerConnections");
     connectButton.disabled = true;
     hangupButton.disabled = false;
@@ -187,12 +234,38 @@ function createPeerConnection() {
         function(offer) {
             log.info('localPeerConnection setLocalDescription:\n', offer.sdp);
             localPeerConnection.setLocalDescription(offer).then(function () {
-                log.info('setLocalDescription success');
+                var sender = localPeerConnection.getSenders()[0]
+                var videoParameters = sender.getParameters();
+                if (JSON.stringify(videoParameters) === '{}') {
+                    videoParameters.encodings = []
+                    videoParameters.encodings[0] = {}
+                }
+
+                var maxBitRate = document.getElementById('maxBitrate').value
+                if(maxBitRate){
+                    if(!maxBitRate){
+                        console.warn('get invalid maxBitRate: ' + maxBitRate)
+                        maxBitRate = 1024000
+                    }else {
+                        maxBitRate = maxBitRate * 1000
+                    }
+
+                    videoParameters.encodings[0].maxBitrate = maxBitRate
+                    videoParameters.degradationPreference =  'maintain-framerate'    // maintain-framerate维持帧率；maintain-resolution 维持分辨率，balanced 保持平衡
+
+                    console.warn("videoParameters: \n", JSON.stringify(videoParameters, null, '   '))
+                    sender.setParameters(videoParameters).then(function () {
+                        console.warn("setParameters set success!!!")
+                    }).catch(function (error) {
+                        console.error(error)
+                    })
+                }else {
+                    console.warn("maxBitrate 不存在，不设置！！")
+                }
             }).catch(function (error) {
                 console.error(error)
             })
 
-            offer.sdp = decorateSdp(offer.sdp)
             log.info(`remotePeerConnection setRemoteDescription : \n${offer.sdp}`);
             remotePeerConnection.setRemoteDescription(offer).then(function () {
                 log.info('remotePeerConnection setRemoteDescription success')
@@ -209,7 +282,20 @@ function createPeerConnection() {
                         log.error(err)
                     })
 
-                    answer.sdp = decorateSdp(answer.sdp)
+                    let parsedSdp = SDPTools.parseSDP(answer.sdp)
+                    for(let i = 0; i < parsedSdp.media.length; i++){
+                        let media = parsedSdp.media[i]
+                        let codec = ['VP9','VP8']
+                        console.warn("删除VP8、VP9编码")
+                        var ASBitrate= document.getElementById('ASBitrate').value
+                        ASBitrate = ASBitrate || 4096
+                        SDPTools.removeCodecByName(parsedSdp, i, codec)
+                        SDPTools.setXgoogleBitrate(parsedSdp, ASBitrate, i)
+                        SDPTools.removeRembAndTransportCC(parsedSdp, i)
+                        media.payloads = media.payloads.trim()
+                    }
+                    answer.sdp = SDPTools.writeSDP(parsedSdp)
+
                     log.warn(`localPeerConnection setRemoteDescription:\n${answer.sdp}`);
                     localPeerConnection.setRemoteDescription(answer).then(function () {
                         log.info('localPeerConnection setRemoteDescription success')
