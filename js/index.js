@@ -5,7 +5,7 @@ let connectButton = document.querySelector('button#connect');
 let hangupButton = document.querySelector('button#hangup');
 
 getMediaButton.onclick = getMedia;
-connectButton.onclick = createPeerConnection;
+connectButton.onclick = createVideoPeerConnection;
 hangupButton.onclick = hangup;
 
 let bitrateDiv = document.querySelector('div#bitrate');
@@ -178,7 +178,7 @@ function legalCheck() {
     return result
 }
 
-function createPeerConnection() {
+function createVideoPeerConnection() {
     if(!legalCheck()){
         alert('请输入ASBitrate、TIASBitrate并确保为数字')
         return

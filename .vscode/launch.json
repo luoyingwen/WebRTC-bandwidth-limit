@@ -9,6 +9,18 @@
             "request": "launch",
             "name": "Open index.html",
             "url": "http://127.0.0.1:5500/index.html"
+        },
+        {
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Open offering.html",
+            "url": "http://127.0.0.1:5500/offering.html"
+        },
+        {
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Open answering.html",
+            "url": "http://127.0.0.1:5500/answering.html"
         }
     ]
 }
